@@ -86,7 +86,7 @@ def hill_climb(problem, max_iters=np.inf, restarts=0, init_state=None):
 
 
 def random_hill_climb(problem, max_attempts=10, max_iters=np.inf, restarts=0,
-                      init_state=None):
+                      init_state=None, track_fits=False):
     """Use randomized hill climbing to find the optimum for a given
     optimization problem.
 
@@ -135,6 +135,10 @@ def random_hill_climb(problem, max_attempts=10, max_iters=np.inf, restarts=0,
 
     best_fitness = -1*np.inf
     best_state = None
+    if track_fits:
+        all_fits = []
+    else:
+        all_fits = None
 
     for _ in range(restarts + 1):
         # Initialize optimization problem and attempts counter
@@ -153,26 +157,32 @@ def random_hill_climb(problem, max_attempts=10, max_iters=np.inf, restarts=0,
             next_state = problem.random_neighbor()
             next_fitness = problem.eval_fitness(next_state)
 
-            # If best neighbor is an improvement,
+            # If best neighbor is an improvement,stick
             # move to that state and reset attempts counter
-            if next_fitness > problem.get_fitness():
+            this_fitness = problem.get_fitness()
+            if next_fitness > this_fitness:
                 problem.set_state(next_state)
                 attempts = 0
 
             else:
                 attempts += 1
 
+            if track_fits:
+                all_fits.append(this_fitness*problem.get_maximize())
         # Update best state and best fitness
         if problem.get_fitness() > best_fitness:
             best_fitness = problem.get_fitness()
             best_state = problem.get_state()
 
     best_fitness = problem.get_maximize()*best_fitness
-    return best_state, best_fitness
+    if track_fits:
+        return best_state, best_fitness, all_fits
+    else:
+        return best_state, best_fitness
 
 
 def simulated_annealing(problem, schedule=GeomDecay(), max_attempts=10,
-                        max_iters=np.inf, init_state=None):
+                        max_iters=np.inf, init_state=None, track_fits=False):
     """Use simulated annealing to find the optimum for a given
     optimization problem.
 
@@ -224,6 +234,12 @@ def simulated_annealing(problem, schedule=GeomDecay(), max_attempts=10,
     attempts = 0
     iters = 0
 
+    if track_fits:
+        all_fits = []
+    else:
+        all_fits = None
+
+
     while (attempts < max_attempts) and (iters < max_iters):
         temp = schedule.evaluate(iters)
         iters += 1
@@ -237,7 +253,8 @@ def simulated_annealing(problem, schedule=GeomDecay(), max_attempts=10,
             next_fitness = problem.eval_fitness(next_state)
 
             # Calculate delta E and change prob
-            delta_e = next_fitness - problem.get_fitness()
+            this_fitness = problem.get_fitness()
+            delta_e = next_fitness - this_fitness
             prob = np.exp(delta_e/temp)
 
             # If best neighbor is an improvement or random value is less
@@ -249,14 +266,20 @@ def simulated_annealing(problem, schedule=GeomDecay(), max_attempts=10,
             else:
                 attempts += 1
 
+            if track_fits:
+                all_fits.append(this_fitness*problem.get_maximize())
+
     best_fitness = problem.get_maximize()*problem.get_fitness()
     best_state = problem.get_state()
 
-    return best_state, best_fitness
+    if track_fits:
+        return best_state, best_fitness, all_fits
+    else:
+        return best_state, best_fitness
 
 
 def genetic_alg(problem, pop_size=200, mutation_prob=0.1, max_attempts=10,
-                max_iters=np.inf):
+                max_iters=np.inf, track_fits=False):
     """Use a standard genetic algorithm to find the optimum for a given
     optimization problem.
 
@@ -313,6 +336,11 @@ def genetic_alg(problem, pop_size=200, mutation_prob=0.1, max_attempts=10,
     attempts = 0
     iters = 0
 
+    if track_fits:
+        all_fits = []
+    else:
+        all_fits = None
+
     while (attempts < max_attempts) and (iters < max_iters):
         iters += 1
 
@@ -341,21 +369,28 @@ def genetic_alg(problem, pop_size=200, mutation_prob=0.1, max_attempts=10,
 
         # If best child is an improvement,
         # move to that state and reset attempts counter
-        if next_fitness > problem.get_fitness():
+        this_fitness = problem.get_fitness()
+        if next_fitness > this_fitness:
             problem.set_state(next_state)
             attempts = 0
 
         else:
             attempts += 1
 
+        if track_fits:
+                all_fits.append(this_fitness*problem.get_maximize())
+
     best_fitness = problem.get_maximize()*problem.get_fitness()
     best_state = problem.get_state()
 
-    return best_state, best_fitness
+    if track_fits:
+        return best_state, best_fitness, all_fits
+    else:
+        return best_state, best_fitness
 
 
 def mimic(problem, pop_size=200, keep_pct=0.2, max_attempts=10,
-          max_iters=np.inf):
+          max_iters=np.inf, track_fits=False):
     """Use MIMIC to find the optimum for a given optimization problem.
 
     Parameters
@@ -417,6 +452,10 @@ def mimic(problem, pop_size=200, keep_pct=0.2, max_attempts=10,
     problem.random_pop(pop_size)
     attempts = 0
     iters = 0
+    if track_fits:
+        all_fits = []
+    else:
+        all_fits = None
 
     while (attempts < max_attempts) and (iters < max_iters):
         iters += 1
@@ -437,6 +476,9 @@ def mimic(problem, pop_size=200, keep_pct=0.2, max_attempts=10,
 
         # If best child is an improvement,
         # move to that state and reset attempts counter
+        this_fitness = problem.get_fitness()
+        if track_fits:
+                all_fits.append(this_fitness*problem.get_maximize())
         if next_fitness > problem.get_fitness():
             problem.set_state(next_state)
             attempts = 0
@@ -447,4 +489,7 @@ def mimic(problem, pop_size=200, keep_pct=0.2, max_attempts=10,
     best_fitness = problem.get_maximize()*problem.get_fitness()
     best_state = problem.get_state().astype(int)
 
-    return best_state, best_fitness
+    if track_fits:
+        return best_state, best_fitness, all_fits
+    else:
+        return best_state, best_fitness

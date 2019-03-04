@@ -8,6 +8,6 @@ from .algorithms import (hill_climb, random_hill_climb, simulated_annealing,
 from .decay import GeomDecay, ArithDecay, ExpDecay, CustomSchedule
 from .fitness import (OneMax, FlipFlop, FourPeaks, SixPeaks, ContinuousPeaks,
                       Knapsack, TravellingSales, Queens, MaxKColor, 
-                      CustomFitness)
+                      CustomFitness, n_ints_summing_to_v)
 from .neural import NeuralNetwork, LinearRegression, LogisticRegression
 from .opt_probs import DiscreteOpt, ContinuousOpt, TSPOpt

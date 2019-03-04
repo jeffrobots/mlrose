@@ -4,6 +4,14 @@
 # License: BSD 3 clause
 
 import numpy as np
+from random import randint
+
+
+# Generate n random integers summing up to a value V. 
+# Useful for initializing random states of Knapsack
+# https://stackoverflow.com/questions/20212830/generate-a-random-3-element-numpy-array-of-integers-summing-to-3
+def n_ints_summing_to_v(n, v):
+  return np.random.multinomial(v, np.ones((n)) / float(n))
 
 
 class OneMax:
@@ -713,6 +721,13 @@ class TravellingSales:
         self.path_list = path_list
         self.dist_list = dist_list
         self.prob_type = 'tsp'
+
+    @classmethod 
+    def autogenerate(cls,num_coords, max_coord=100, min_coord=0):
+        nx, ny = max_coord, max_coord
+        xy = np.mgrid[:nx,:ny].reshape(2, -1).T
+        new_coords = xy.take(np.random.choice(xy.shape[0], num_coords, replace=False), axis=0)
+        return cls(coords=new_coords)
 
     def evaluate(self, state):
         """Evaluate the fitness of a state vector.
